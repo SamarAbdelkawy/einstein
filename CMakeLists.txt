@@ -15,7 +15,7 @@ INCLUDE(CyclusBuildSetup)
 cyclus_minimum_cmake_version(MINIMUM_CMAKE_VERSION)
 CMAKE_MINIMUM_REQUIRED(VERSION ${MINIMUM_CMAKE_VERSION})
 
-PROJECT(Einstein)
+PROJECT(einstein)
 
 cyclus_require_out_of_source_build()
 cyclus_require_cxx_support()
