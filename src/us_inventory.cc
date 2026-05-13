@@ -16,10 +16,14 @@ USInventory::~USInventory() {}
 
 void USInventory::InitFrom(USInventory* m) {
   #pragma cyclus impl initfromcopy einstein::USInventory
+  cyclus::toolkit::CommodityProducer::Copy(m);
 }
 
 void USInventory::InitFrom(cyclus::QueryableBackend* b) {
   #pragma cyclus impl initfromdb einstein::USInventory
+  namespace tk = cyclus::toolkit;
+  tk::CommodityProducer::Add(tk::Commodity(outcommod),
+                             tk::CommodInfo(throughput_kg, throughput_kg));
 }
 
 std::string USInventory::str() {
@@ -336,6 +340,11 @@ void USInventory::LoadCompositionCSV_(const std::string& path) {
         cyclus::Composition::CreateFromMass(kv.second);
   }
 }
+
+/// should use pyne this upcoming way instead of thw whole upcoming function:
+/// int USInventory::NucIdFromString_(const std::string& s) const {
+/// return pyne::nucname::id(s);
+///}
 
 int USInventory::NucIdFromString_(const std::string& s) const {
   std::string t = s;

@@ -17,7 +17,10 @@ namespace einstein {
 /// them internally as inventory bins, and offers material on a configured
 /// output commodity. Material is supplied from the available bins subject to a
 /// per-timestep throughput limit.
-class USInventory : public cyclus::Facility {
+class USInventory : public cyclus::Facility,
+    public cyclus::toolkit::CommodityProducer,
+    public cyclus::toolkit::Position {
+
  public:
   USInventory(cyclus::Context* ctx);
 
@@ -129,5 +132,5 @@ class USInventory : public cyclus::Facility {
 
 }  // namespace einstein
 
-//comment
+
 #endif  // EINSTEIN_SRC_US_INVENTORY_H_
