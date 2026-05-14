@@ -7,7 +7,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "pyne/nucname.h"
+//#include "pyne/nucname.h"
 
 namespace einstein {
 
@@ -458,7 +458,7 @@ void USInventory::LoadCompositionCSV_(const std::string& path) {
 }
 
 // ---------------------------------------------------------------------------
-// Nuclide parsing — delegate to PyNE instead of ZZAAAM.
+// Nuclide parsing — PyNE instead of ZZAAAM.
 // and accepts "U235", "U-235", "92235", and other common formats.
 // ---------------------------------------------------------------------------
 

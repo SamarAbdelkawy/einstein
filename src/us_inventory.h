@@ -176,4 +176,5 @@ class USInventory : public cyclus::Facility,
 
 }  // namespace einstein
 
+
 #endif  // EINSTEIN_SRC_US_INVENTORY_H_
