@@ -9,6 +9,11 @@ example/
 #cyclus outputs
 *.sqlite
 
+#data files
+*.csv
+*.json
+*.jsonl
+
 # CMake files
 CMakeCache.txt
 CMakeFiles/
