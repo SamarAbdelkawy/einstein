@@ -529,7 +529,7 @@ int us_inventory::NucIdFromString_(const std::string& s) const {
   }
 
   int z = it->second;
-  int zzaaam = z * 10000 + A * 10;
+  int zzaaam = z * 10000000 + A * 10000;
 
   return zzaaam;
 }
