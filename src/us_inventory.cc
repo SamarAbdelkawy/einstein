@@ -381,7 +381,7 @@ void us_inventory::LoadAssembliesCSV_(const std::string& path) {
 
     if (i_date >= 0 && i_date < static_cast<int>(v.size()) &&
         !v[i_date].empty()) {
-      b.discharge_date = std::stod(v[i_date]);
+      b.discharge_date = std::stod(v[i_date].substr(0, 4));
     }
 
     if (i_bu >= 0 && i_bu < static_cast<int>(v.size()) &&
