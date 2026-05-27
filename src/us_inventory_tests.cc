@@ -49,8 +49,20 @@ TEST_F(us_inventoryTest, Tock) {
   // Test us_inventory specific behaviors of the Tock function here
 }
 
-
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+TEST_F(us_inventoryTest, EnterNotify_ThrowsIfOutcommmodMissing) {
+  // Setup: set everything EXCEPT outcommod
+  facility->assemblies_file  = "/tmp/test_assemblies.csv";
+  facility->composition_file = "/tmp/test_compositions.csv";
+  facility->throughput_kg    = 1e299;
+  facility->allow_partial    = true;
+  facility->selection_policy = "first";
+  // outcommod is intentionally left empty (it defaults to "")
+
+  // Assert: calling EnterNotify should throw a ValueError
+  EXPECT_THROW(facility->EnterNotify(), cyclus::ValueError);
+}
+
 // Do Not Touch! Below section required for connection with Cyclus
 cyclus::Agent* us_inventoryConstructor(cyclus::Context* ctx) {
   return new us_inventory(ctx);
