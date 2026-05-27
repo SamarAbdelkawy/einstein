@@ -43,6 +43,7 @@ std::string us_inventory::str() {
 
 void us_inventory::EnterNotify() {
   cyclus::Facility::EnterNotify();
+  InitializePosition();
 
   if (outcommod.empty()) {
     throw cyclus::ValueError("us_inventory: outcommod is required.");
