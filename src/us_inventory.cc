@@ -488,6 +488,13 @@ int us_inventory::NucIdFromString_(const std::string& s) const {
   std::string sym = t.substr(0, pos);
   std::string a_str = t.substr(pos);
 
+  // Strip trailing metastable indicator ('m')
+  // e.g. "108m" -> "108"
+  size_t m_pos = a_str.find_first_not_of("0123456789");
+  if (m_pos != std::string::npos) {
+    a_str = a_str.substr(0, m_pos);  // keep only the digits
+  }
+
   sym[0] = std::toupper(static_cast<unsigned char>(sym[0]));
   for (size_t i = 1; i < sym.size(); ++i) {
     sym[i] = std::tolower(static_cast<unsigned char>(sym[i]));
