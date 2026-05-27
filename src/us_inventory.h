@@ -61,6 +61,7 @@ class us_inventory : public cyclus::Facility,
 
  private:
   // Cyclus state variables
+  friend class us_inventoryTest;
 
   #pragma cyclus var { \
     "tooltip": "Commodity this facility supplies.", \
