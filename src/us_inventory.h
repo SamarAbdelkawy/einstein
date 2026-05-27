@@ -19,6 +19,7 @@ namespace einstein {
 /// per-timestep throughput limit.
 class us_inventory : public cyclus::Facility,
     public cyclus::toolkit::CommodityProducer {
+    friend class us_inventoryTest;
 
  public:
   us_inventory(cyclus::Context* ctx);
@@ -61,7 +62,6 @@ class us_inventory : public cyclus::Facility,
 
  private:
   // Cyclus state variables
-  friend class us_inventoryTest;
 
   #pragma cyclus var { \
     "tooltip": "Commodity this facility supplies.", \
