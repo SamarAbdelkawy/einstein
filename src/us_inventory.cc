@@ -133,7 +133,9 @@ void us_inventory::EnterNotify() {
 // Python-dict literal (single quotes; grams values as quoted scientific
 // notation). The tiny tokenizer below accepts BOTH ' and " as string
 // delimiters, so plant names containing an apostrophe are safe.
-namespace {
+//
+// namespace, so the helpers live in usinv_detail instead.
+namespace usinv_detail {
 
 struct ParsedAssembly {
   std::string facility, location, assembly_id, storage_type;
@@ -239,7 +241,7 @@ ParsedAssembly ParseAssemblyLine(const std::string& raw) {
   return a;
 }
 
-}  // anonymous namespace
+}  // namespace usinv_detail
 
 void us_inventory::LoadAllData_(const std::string& dir) {
   DIR* d = opendir(dir.c_str());
@@ -283,7 +285,7 @@ void us_inventory::LoadDataJSONL_(const std::string& path) {
       if (line.find('{') == std::string::npos) continue;
     }
 
-    ParsedAssembly pa = ParseAssemblyLine(line);
+    usinv_detail::ParsedAssembly pa = usinv_detail::ParseAssemblyLine(line);
     if (pa.grams.empty()) continue;
 
     // Build the composition map and the running gram total.

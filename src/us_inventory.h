@@ -247,3 +247,4 @@ class us_inventory : public cyclus::Facility,
 
 
 #endif  // EINSTEIN_SRC_US_INVENTORY_H_
+
