@@ -1,8 +1,8 @@
-<!-- 1 Source Source, 1 Sink Sink -->
+<!-- 1 us_inventory, 1 Sink -->
 
 <simulation>
   <control>
-    <duration>10</duration>
+    <duration>30</duration>
     <startmonth>1</startmonth>
     <startyear>2000</startyear>
     <explicit_inventory>1</explicit_inventory>
@@ -34,7 +34,7 @@
         <outcommod>commodity</outcommod>
         <assemblies_file>./assemblies.csv</assemblies_file>
         <composition_file>./composition.csv</composition_file>
-        <throughput_kg>1000</throughput_kg>
+        <selection_policy>highest_burnup</selection_policy>
       </us_inventory>
     </config>
   </facility>
@@ -46,7 +46,7 @@
         <in_commods>
           <val>commodity</val>
         </in_commods>
-        <capacity>1</capacity>
+        <capacity>500</capacity>
       </Sink>
     </config>
   </facility>
