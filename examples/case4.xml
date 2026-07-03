@@ -1,0 +1,190 @@
+<!-- ==========================================================================
+     EINSTEIN fuel-cycle simulation  -  Case 4: 50% MA / 50% Pu, 3 GW, Pb ADS
+     Flowsheet:
+        us_inventory --snf--> Separations --ma_stream--+
+                                   ^                     +--> Mixer --ads_feed--> ADS --+
+                                   |         --pu_stream-+                              |
+                                   +------------------------- ads_out -----------------+  (recycle)
+                                   +--sep_waste--> WasteRepo
+
+     Difference vs Case 3: SNF has ~10x more Pu than MA, so a 50/50 feed cannot
+     come straight out of separations. Separations makes TWO streams and a Mixer
+     pins them at 0.5/0.5 by mass to reproduce the Case-4 Serpent feed.
+     ========================================================================== -->
+<simulation>
+
+  <control>
+    <duration>360</duration>          <!-- 30 years, monthly steps -->
+    <startmonth>1</startmonth>
+    <startyear>2025</startyear>
+    <decay>never</decay>              <!-- switch to 'lazy' for physics runs -->
+    <explicit_inventory>1</explicit_inventory>
+  </control>
+
+  <archetypes>
+    <spec><lib>einstein</lib><name>us_inventory</name></spec>
+    <spec><lib>einstein</lib><name>ads</name></spec>
+    <spec><lib>cycamore</lib><name>Separations</name></spec>
+    <spec><lib>cycamore</lib><name>Mixer</name></spec>
+    <spec><lib>cycamore</lib><name>Sink</name></spec>
+    <spec><lib>agents</lib><name>NullRegion</name></spec>
+    <spec><lib>agents</lib><name>NullInst</name></spec>
+  </archetypes>
+
+  <!-- ====== 1) SUPPLY: US SNF inventory (unchanged from Case 3) =========== -->
+  <facility>
+    <name>USInventory</name>
+    <config>
+      <us_inventory>
+        <outcommod>snf</outcommod>
+        <data_dir>../UIUC_data</data_dir>
+        <coordinates_file>./coordinates.sqlite</coordinates_file>
+        <throughput_kg>250000</throughput_kg>
+        <selection_policy>highest_minor_actinide</selection_policy>
+        <allow_partial>1</allow_partial>
+      </us_inventory>
+    </config>
+  </facility>
+
+  <!-- ====== 2) SEPARATIONS: now TWO product streams ======================
+       Same unit accepts fresh SNF and recycled ADS discharge, but here it
+       splits actinides into two separate streams so the Mixer can recombine
+       them at a controlled ratio:
+         ma_stream : Np + Am + Cm  (minor actinides)
+         pu_stream : Pu
+       Uranium and fission products still fall to the leftover 'sep_waste'.
+  -->
+  <facility>
+    <name>MASeparations</name>
+    <config>
+      <Separations>
+        <feed_commods>
+          <val>snf</val>
+          <val>ads_out</val>
+        </feed_commods>
+        <feedbuf_size>1e9</feedbuf_size>
+        <throughput>250000</throughput>
+        <leftover_commod>sep_waste</leftover_commod>
+        <leftoverbuf_size>1e12</leftoverbuf_size>
+        <streams>
+          <item>
+            <commod>ma_stream</commod>
+            <info>
+              <buf_size>-1</buf_size>
+              <efficiencies>
+                <item><comp>Np</comp><eff>0.99</eff></item>
+                <item><comp>Am</comp><eff>0.99</eff></item>
+                <item><comp>Cm</comp><eff>0.99</eff></item>
+              </efficiencies>
+            </info>
+          </item>
+          <item>
+            <commod>pu_stream</commod>
+            <info>
+              <buf_size>-1</buf_size>
+              <efficiencies>
+                <item><comp>Pu</comp><eff>0.99</eff></item>
+              </efficiencies>
+            </info>
+          </item>
+        </streams>
+      </Separations>
+    </config>
+  </facility>
+
+  <!-- ====== 3) MIXER: blend MA + Pu to a fixed 50/50 feed =================
+       mixing_ratio is the mass fraction each stream contributes to the output.
+       0.5 / 0.5 reproduces the Case-4 feed. Because SNF is Pu-rich but MA-poor,
+       the MA stream is the limiting one: the mixer can only make output at
+       ~2x the MA supply rate, and surplus Pu waits in its buffer. That MA-
+       limited feed rate is physical and expected.
+       out_commod=ads_feed is what the ADS requests.
+  -->
+  <facility>
+    <name>FeedMixer</name>
+    <config>
+      <Mixer>
+        <in_streams>
+          <stream>
+            <info>
+              <mixing_ratio>0.5</mixing_ratio>
+              <buf_size>1e9</buf_size>
+              <commodities>
+                <item><commodity>ma_stream</commodity><pref>1.0</pref></item>
+              </commodities>
+            </info>
+          </stream>
+          <stream>
+            <info>
+              <mixing_ratio>0.5</mixing_ratio>
+              <buf_size>1e9</buf_size>
+              <commodities>
+                <item><commodity>pu_stream</commodity><pref>1.0</pref></item>
+              </commodities>
+            </info>
+          </stream>
+        </in_streams>
+        <out_commod>ads_feed</out_commod>
+        <out_buf_size>1e9</out_buf_size>
+        <throughput>250000</throughput>
+      </Mixer>
+    </config>
+  </facility>
+
+  <!-- ====== 4) THE ADS BURNER (Case 4) ===================================
+       - incommods=ads_feed: the 50/50 blended stream from the Mixer.
+       - power_level=3000 selects the 3 GW tier; case_dir -> the 50/50 folder.
+       - capacity = core actinide mass per load (kg). *** RECONCILE - see NOTES ***
+       - cycle_time x days_per_step ~ the Serpent run length:
+             24 steps x 30.4375 d = 730 d ~ the ~750-day Case-4 run (~51% burn).
+       - conserve_mass=0: fissioned mass leaves the sim, logged as 'Burned'.
+       Recycle: ads_out returns to Separations, which re-splits it into MA and
+       Pu, so BOTH actinide groups are recycled (not just MA as in Case 3).
+  -->
+  <facility>
+    <name>MyADS</name>
+    <config>
+      <ads>
+        <incommods><val>ads_feed</val></incommods>
+        <outcommod>ads_out</outcommod>
+        <capacity>4400</capacity>
+        <cycle_time>24</cycle_time>
+        <refuel_time>6</refuel_time>
+        <power_level>3000</power_level>
+        <case_dir>./serpent_cases/no_source_3GW_1.3_vt_5050_puma_Pb_mix</case_dir>
+        <fidelity>closest</fidelity>
+        <days_per_step>30.4375</days_per_step>
+        <conserve_mass>0</conserve_mass>
+      </ads>
+    </config>
+  </facility>
+
+  <!-- ====== 5) WASTE REPOSITORY (U, fission products) ==================== -->
+  <facility>
+    <name>WasteRepo</name>
+    <config>
+      <Sink>
+        <in_commods><val>sep_waste</val></in_commods>
+        <capacity>1e12</capacity>
+      </Sink>
+    </config>
+  </facility>
+
+  <!-- ====== DEPLOYMENT =================================================== -->
+  <region>
+    <name>USA</name>
+    <config><NullRegion/></config>
+    <institution>
+      <name>FuelCycleInst</name>
+      <initialfacilitylist>
+        <entry><prototype>USInventory</prototype><number>1</number></entry>
+        <entry><prototype>MASeparations</prototype><number>1</number></entry>
+        <entry><prototype>FeedMixer</prototype><number>1</number></entry>
+        <entry><prototype>MyADS</prototype><number>1</number></entry>
+        <entry><prototype>WasteRepo</prototype><number>1</number></entry>
+      </initialfacilitylist>
+      <config><NullInst/></config>
+    </institution>
+  </region>
+
+</simulation>
