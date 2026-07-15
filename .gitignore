@@ -5,6 +5,11 @@ cmake-build-*/
 
 #example directory
 example/
+examples/
+
+#data folders
+UIUC_data/
+serpent_cases/
 
 #cyclus outputs
 *.sqlite
